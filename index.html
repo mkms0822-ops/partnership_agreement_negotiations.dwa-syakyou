@@ -42,6 +42,30 @@
   .section-label{font-size:13px;font-weight:800;color:var(--ink-dim);letter-spacing:.06em;margin:26px 0 12px;display:flex;align-items:center;gap:8px}
   .section-label::before{content:"";width:4px;height:16px;background:var(--accent);border-radius:2px;display:inline-block}
 
+  /* ===== メモ欄 ===== */
+  .memo-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+  @media(max-width:640px){.memo-wrap{grid-template-columns:1fr}}
+  .memo-col{background:var(--navy-800);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .memo-col.syakyo{border-top:4px solid #3f8ad1}
+  .memo-col.dwa{border-top:4px solid #e8541e}
+  .memo-col h4{font-size:14px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .memo-col.syakyo h4{color:#3f8ad1}
+  .memo-col.dwa h4{color:#e8541e}
+  .memo-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;margin-bottom:10px}
+  .memo-item{background:var(--field);border:1px solid var(--field-line);border-radius:8px;padding:8px 10px}
+  .memo-item .mi-h{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+  .memo-item .mi-name{font-size:12px;font-weight:800;color:var(--ink)}
+  .memo-item .mi-time{font-size:10.5px;color:var(--ink-dim);margin-left:auto}
+  .memo-item .mi-text{font-size:13px;color:var(--ink);white-space:pre-wrap;word-break:break-word;line-height:1.55}
+  .memo-item .mi-del{font-size:10px;color:#c23b3b;background:none;border:none;cursor:pointer;margin-left:6px;font-weight:700}
+  .memo-empty{font-size:12px;color:var(--ink-dim);text-align:center;padding:14px}
+  .memo-form{display:flex;flex-direction:column;gap:6px}
+  .memo-form input{min-height:38px;background:var(--field);color:var(--ink);border:1px solid var(--field-line);border-radius:7px;padding:6px 10px;font-size:14px}
+  .memo-form textarea{min-height:56px;background:var(--field);color:var(--ink);border:1px solid var(--field-line);border-radius:7px;padding:8px 10px;font-size:14px;font-family:inherit;resize:vertical;line-height:1.5}
+  .memo-form .mf-row{display:flex;gap:8px;align-items:center}
+  .memo-form button{min-height:38px;padding:0 16px;border:none;border-radius:7px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap}
+  .memo-stat{font-size:11px;color:var(--ink-dim)}
+
   /* 打ち合わせカード */
   .meeting{background:var(--navy-800);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px;overflow:hidden}
   .m-head{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;flex-wrap:wrap}
@@ -128,6 +152,10 @@
     </div>
   </div>
 
+  <!-- 全体共通メモ -->
+  <div class="section-label">連絡メモ（全体共通）</div>
+  <div id="globalMemo"></div>
+
   <!-- 打ち合わせ履歴 -->
   <div class="section-label">打ち合わせ履歴</div>
   <div id="meetingList"></div>
@@ -171,6 +199,9 @@
 </footer>
 
 <script>
+// ===== メモ機能：保存先GASのURL（新規に作成した /exec URLを設定） =====
+var MEMO_GAS_URL = 'https://script.google.com/macros/s/AKfycbygvJVGlTkHs3MHjeg4nKn933kb2etUB4NS1NqDEQhlM7XnQXEzQxS2_3i8K4PV7_qX/exec';
+
 // ===== 標準の資料セット（各打ち合わせに付く） =====
 // type: 'pdf'（PDFビューアで表示）／各ツールは url でリンク
 var STANDARD_DOCS = [
@@ -263,12 +294,96 @@ function render(){
         '<button class="m-toggle" onclick="event.stopPropagation();toggleMeeting(\''+esc(m.id)+'\')">'+(m.open?'▲ 閉じる':'📂 資料を展開')+'</button>'+
       '</div>'+
       '<div class="m-body">'+docs+
+        memoWrapHtml(m.id)+
         '<div style="text-align:right;margin-top:14px">'+
           '<button class="btn btn-link" onclick="removeMeeting(\''+esc(m.id)+'\')">この打ち合わせを削除</button>'+
         '</div>'+
       '</div>'+
     '</div>';
   }).join('');
+  // 全体共通メモを描画
+  document.getElementById('globalMemo').innerHTML = memoWrapHtml('global');
+  // 各scopeのメモを読み込む
+  loadMemos('global');
+  list.forEach(function(m){ if(m.open) loadMemos(m.id); });
+}
+
+// メモUI（社協欄＋DWA欄）のHTML
+function memoWrapHtml(scope){
+  return '<div class="memo-wrap">'+
+    memoColHtml(scope,'syakyo','🏛 社会福祉協議会 メモ')+
+    memoColHtml(scope,'dwa','🛡 DWA防災情報センター メモ')+
+  '</div>';
+}
+function memoColHtml(scope, side, title){
+  var sid = scope+'__'+side;
+  return '<div class="memo-col '+side+'"><h4>'+title+'</h4>'+
+    '<div class="memo-list" id="memolist_'+sid+'"><div class="memo-empty">読み込み中…</div></div>'+
+    '<div class="memo-form">'+
+      '<div class="mf-row">'+
+        '<input id="memoname_'+sid+'" placeholder="お名前" style="flex:1">'+
+        '<button onclick="postMemo(\''+esc(scope)+'\',\''+side+'\')">投稿</button>'+
+      '</div>'+
+      '<textarea id="memotext_'+sid+'" placeholder="メモを入力して投稿"></textarea>'+
+      '<span class="memo-stat" id="memostat_'+sid+'"></span>'+
+    '</div></div>';
+}
+
+// メモ読み込み（JSONP）
+function loadMemos(scope){
+  if(!MEMO_GAS_URL){ showMemoNotConfigured(scope); return; }
+  var cb='memoCb_'+scope.replace(/[^a-zA-Z0-9]/g,'')+'_'+Date.now();
+  var s=document.createElement('script');
+  var to=setTimeout(function(){cleanup();},8000);
+  function cleanup(){ try{delete window[cb];}catch(e){} if(s.parentNode)s.parentNode.removeChild(s); clearTimeout(to); }
+  window[cb]=function(res){ cleanup(); if(res&&res.ok) renderMemos(scope, res.memos||[]); };
+  s.onerror=cleanup;
+  s.src=MEMO_GAS_URL+'?action=list&scope='+encodeURIComponent(scope)+'&callback='+cb;
+  document.head.appendChild(s);
+}
+function showMemoNotConfigured(scope){
+  ['syakyo','dwa'].forEach(function(side){
+    var el=document.getElementById('memolist_'+scope+'__'+side);
+    if(el) el.innerHTML='<div class="memo-empty">メモ保存先（GAS）が未設定です。<br>MEMO_GAS_URL を設定してください。</div>';
+  });
+}
+function renderMemos(scope, memos){
+  ['syakyo','dwa'].forEach(function(side){
+    var el=document.getElementById('memolist_'+scope+'__'+side);
+    if(!el) return;
+    var list=memos.filter(function(m){return m.side===side;});
+    if(!list.length){ el.innerHTML='<div class="memo-empty">まだメモはありません。</div>'; return; }
+    el.innerHTML=list.map(function(m){
+      return '<div class="memo-item"><div class="mi-h"><span class="mi-name">'+esc(m.name)+'</span>'+
+        '<span class="mi-time">'+esc(m.created_at)+'</span>'+
+        '<button class="mi-del" onclick="deleteMemo(\''+esc(m.id)+'\',\''+esc(scope)+'\')">削除</button></div>'+
+        '<div class="mi-text">'+esc(m.text)+'</div></div>';
+    }).join('');
+    el.scrollTop=el.scrollHeight;
+  });
+}
+// メモ投稿
+function postMemo(scope, side){
+  var sid=scope+'__'+side;
+  var name=(document.getElementById('memoname_'+sid).value||'').trim()||'名無し';
+  var text=(document.getElementById('memotext_'+sid).value||'').trim();
+  var stat=document.getElementById('memostat_'+sid);
+  if(!text){ if(stat)stat.textContent='メモを入力してください'; return; }
+  if(!MEMO_GAS_URL){ if(stat)stat.textContent='保存先が未設定です'; return; }
+  if(stat)stat.textContent='投稿中…';
+  fetch(MEMO_GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'post',scope:scope,side:side,name:name,text:text})})
+    .then(function(r){return r.json();}).then(function(res){
+      if(res&&res.ok){ document.getElementById('memotext_'+sid).value=''; if(stat)stat.textContent='投稿しました'; loadMemos(scope); }
+      else{ if(stat)stat.textContent='投稿に失敗しました'; }
+    }).catch(function(){ if(stat)stat.textContent='通信エラー'; });
+}
+// メモ削除
+function deleteMemo(id, scope){
+  if(!confirm('このメモを削除しますか？')) return;
+  fetch(MEMO_GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'delete',id:id})})
+    .then(function(r){return r.json();}).then(function(){ loadMemos(scope); }).catch(function(){});
 }
 
 function docHtml(doc){
