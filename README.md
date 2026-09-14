@@ -1,0 +1,1 @@
+# partnership_agreement_negotiations.dwa-syakyou
