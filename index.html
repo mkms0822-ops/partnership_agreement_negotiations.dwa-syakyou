@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>長岡京市社会福祉協議会 × DWA防災情報センター｜協議資料ハブ</title>
+<style>
+  :root{
+    --navy-900:#0b1f33; --navy-800:#0f2942; --navy-700:#173a5e; --line:#28496b;
+    --ink:#eaf1f8; --ink-dim:#9db4cc; --field:#0d2137; --field-line:#2f5679;
+    --ok:#1f9d55; --accent:#ffb703; --accent-ink:#0b1f33; --radius:12px;
+    --blue:#3f8ad1; --green:#2e7d5b; --purple:#8a5cc4; --red:#c23b3b; --orange:#c9832f;
+  }
+  [data-theme="light"]{
+    --navy-900:#eef2f6; --navy-800:#ffffff; --navy-700:#e4e9f1; --line:#d3dae6;
+    --ink:#152233; --ink-dim:#5b6b81; --field:#f7f9fc; --field-line:#c2ccdb; --accent:#f59e00; --accent-ink:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI",system-ui,sans-serif;
+    background:var(--navy-900);color:var(--ink);line-height:1.6;padding-bottom:40px}
+
+  header{background:linear-gradient(135deg,var(--navy-800),var(--navy-900));border-bottom:1px solid var(--line);
+    padding:22px 20px;position:sticky;top:0;z-index:20;backdrop-filter:blur(4px)}
+  .head-in{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .logo{width:44px;height:44px;border-radius:11px;background:var(--accent);color:var(--accent-ink);
+    display:grid;place-items:center;font-weight:900;font-size:22px;flex:none}
+  .htitle{font-size:18px;font-weight:900}
+  .htitle small{display:block;font-size:11.5px;color:var(--ink-dim);font-weight:600;letter-spacing:.04em;margin-top:2px}
+  .head-sp{flex:1}
+  .theme-btn{background:var(--field);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;
+    padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer}
+
+  .wrap{max-width:960px;margin:0 auto;padding:22px 20px}
+
+  /* 導入 */
+  .intro{background:var(--navy-800);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:22px}
+  .intro h1{font-size:20px;font-weight:900;margin-bottom:6px}
+  .intro .sub{color:var(--ink-dim);font-size:13px;margin-bottom:14px}
+  .intro p{font-size:14px;color:var(--ink);margin-bottom:8px}
+  .intro .lead{background:var(--field);border-left:4px solid var(--accent);border-radius:8px;padding:12px 14px;font-size:13.5px;color:var(--ink);margin-top:12px}
+
+  .section-label{font-size:13px;font-weight:800;color:var(--ink-dim);letter-spacing:.06em;margin:26px 0 12px;display:flex;align-items:center;gap:8px}
+  .section-label::before{content:"";width:4px;height:16px;background:var(--accent);border-radius:2px;display:inline-block}
+
+  /* 打ち合わせカード */
+  .meeting{background:var(--navy-800);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px;overflow:hidden}
+  .m-head{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;flex-wrap:wrap}
+  .m-head:hover{background:var(--navy-700)}
+  .m-date{display:flex;flex-direction:column;align-items:center;background:var(--navy-700);border:1px solid var(--line);
+    border-radius:10px;padding:6px 14px;min-width:74px;flex:none}
+  .m-date .md{font-size:22px;font-weight:900;line-height:1}
+  .m-date .my{font-size:11px;color:var(--ink-dim);margin-top:3px}
+  .m-info{flex:1;min-width:180px}
+  .m-title{font-size:16px;font-weight:800}
+  .m-note{font-size:12.5px;color:var(--ink-dim);margin-top:3px}
+  .m-toggle{background:var(--accent);color:var(--accent-ink);border:none;border-radius:8px;
+    padding:10px 18px;font-size:14px;font-weight:800;cursor:pointer;flex:none}
+  .m-body{display:none;padding:4px 20px 20px;border-top:1px solid var(--line)}
+  .meeting.open .m-body{display:block}
+  .meeting.open .m-toggle{background:var(--navy-700);color:var(--ink)}
+
+  /* 資料アイテム */
+  .doc{background:var(--field);border:1px solid var(--field-line);border-radius:10px;padding:14px 16px;margin-top:12px}
+  .doc-h{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
+  .doc-badge{font-size:11px;font-weight:800;color:#fff;border-radius:6px;padding:3px 9px;flex:none;margin-top:2px}
+  .doc-title{font-size:15px;font-weight:800}
+  .doc-desc{font-size:12.5px;color:var(--ink-dim);margin:4px 0 10px;line-height:1.65}
+  .doc-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;padding:9px 16px;
+    font-size:13px;font-weight:800;cursor:pointer;text-decoration:none}
+  .btn-pdf{background:var(--red);color:#fff}
+  .btn-tool{background:var(--green);color:#fff}
+  .btn-link{background:var(--navy-700);color:var(--ink);border:1px solid var(--line)}
+  .btn:hover{filter:brightness(1.08)}
+  .doc-meta{font-size:11.5px;color:var(--ink-dim);margin-top:8px}
+
+  /* 新規追加フォーム */
+  .add-card{background:var(--navy-800);border:1px dashed var(--field-line);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px}
+  .add-card h3{font-size:14px;font-weight:800;margin-bottom:12px}
+  .add-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px}
+  .add-row label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink-dim);flex:1;min-width:140px}
+  .add-row input{min-height:44px;background:var(--field);color:var(--ink);border:1px solid var(--field-line);
+    border-radius:8px;padding:8px 12px;font-size:15px}
+  .add-btn{background:var(--accent);color:var(--accent-ink);border:none;border-radius:8px;padding:11px 20px;
+    font-size:14px;font-weight:800;cursor:pointer;min-height:44px}
+  .add-hint{font-size:12px;color:var(--ink-dim);margin-top:4px}
+
+  /* PDFビューア（モーダル） */
+  .viewer{position:fixed;inset:0;z-index:100;background:rgba(5,15,28,.85);display:none;flex-direction:column}
+  .viewer.show{display:flex}
+  .v-bar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--navy-800);border-bottom:1px solid var(--line)}
+  .v-title{font-size:14px;font-weight:800;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .v-bar a,.v-bar button{background:var(--navy-700);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;flex:none}
+  .v-close{background:var(--red)!important;color:#fff!important;border:none!important}
+  .viewer iframe{flex:1;width:100%;border:none;background:#fff}
+
+  footer{max-width:960px;margin:30px auto 0;padding:20px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--ink-dim);text-align:center;line-height:1.8}
+  footer b{color:var(--ink)}
+  @media(max-width:560px){
+    .m-toggle{width:100%;margin-top:8px}
+    .doc-btns .btn{flex:1;justify-content:center}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-in">
+    <div class="logo">協</div>
+    <div class="htitle">協議資料ハブ<small>長岡京市社会福祉協議会 × DWA防災情報センター</small></div>
+    <span class="head-sp"></span>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 ダーク</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- 導入 -->
+  <div class="intro">
+    <h1>災害時パートナーシップ協定 協議資料ハブ</h1>
+    <div class="sub">長岡京市社会福祉協議会 御中 ／ 発行：DWA防災情報センター（古谷 浩二・古谷 優希）</div>
+    <p>本ページは、長岡京市社会福祉協議会様との協議にあたり、DWA防災情報センターがご提案する防災・地域支援ツール群と、各回の会議資料を一元的にまとめた打ち合わせ専用ページです。</p>
+    <p>下記の3つのツールを今回ご提案いたします。いずれも試作版であり、<b>今後、社会福祉協議会様と協議を重ねながら開発を進め、共同運用・共同事業化の可能性についても検討していきたい</b>と考えております。</p>
+    <div class="lead">
+      各「打ち合わせ」の <b>「資料を展開」</b> ボタンを押すと、その回の資料（PDF）と各ツールのリンクが表示されます。会議を重ねるごとに、日付と資料が履歴として追加されていきます。
+    </div>
+  </div>
+
+  <!-- 打ち合わせ履歴 -->
+  <div class="section-label">打ち合わせ履歴</div>
+  <div id="meetingList"></div>
+
+  <!-- 新規打ち合わせ追加 -->
+  <div class="add-card">
+    <h3>＋ 打ち合わせを追加</h3>
+    <div class="add-row">
+      <label>日付
+        <input type="date" id="addDate">
+      </label>
+      <label>タイトル
+        <input type="text" id="addTitle" placeholder="例：第2回 協議">
+      </label>
+      <label>メモ（任意）
+        <input type="text" id="addNote" placeholder="例：役割分担・費用負担について">
+      </label>
+      <button class="add-btn" onclick="addMeeting()">追加する</button>
+    </div>
+    <div class="add-hint">追加した打ち合わせには、標準の5資料（会議資料・各ツール説明書・フライヤー）が自動で付きます。この端末に保存されます。</div>
+  </div>
+
+</div>
+
+<!-- PDFビューア -->
+<div class="viewer" id="viewer">
+  <div class="v-bar">
+    <span class="v-title" id="vTitle">資料</span>
+    <a id="vOpen" href="#" target="_blank" rel="noopener">別タブで開く</a>
+    <a id="vDownload" href="#" download>ダウンロード</a>
+    <button class="v-close" onclick="closeViewer()">✕ 閉じる</button>
+  </div>
+  <iframe id="vFrame" src=""></iframe>
+</div>
+
+<footer>
+  <b>DWA防災情報センター</b>（長岡京市認定 市民活動団体）<br>
+  京都府長岡京市神足芝本19-2 アクエルド長岡京 305 ／ TEL 090-8126-3532 ／ dwa8791@bousai0111.info<br>
+  http://bousai0111.info<br>
+  ※ 各ツールは試作版です。避難などの判断は、必ず気象庁・自治体などの公式発表もあわせてご確認ください。
+</footer>
+
+<script>
+// ===== 標準の資料セット（各打ち合わせに付く） =====
+// type: 'pdf'（PDFビューアで表示）／各ツールは url でリンク
+var STANDARD_DOCS = [
+  {
+    badge:'資料', color:'#3f8ad1',
+    title:'会議資料',
+    desc:'本日の協議項目（連携の目的・役割分担・費用負担・著作権・広報など）をまとめた会議次第です。',
+    pdf:'docs/01_会議資料.pdf'
+  },
+  {
+    badge:'ツール①', color:'#2e7d5b',
+    title:'長岡京市 災害時避難所運営管理ツール — 概要・取扱説明書',
+    desc:'各避難所（現地）と本部（ホスト）で、避難者数・ライフライン・要配慮者・備蓄などをリアルタイム共有・集計するWebアプリ。避難所別ログイン、オフライン対応、日誌アーカイブ、連絡チャットなどを搭載。',
+    pdf:'docs/02_避難所管理ツール.pdf',
+    tools:[
+      {label:'ホスト管理画面を開く', url:'https://script.google.com/macros/s/AKfycbxqb3hZZS05ciwfdHOzGR-FTRTj-wQqYzLncQ_JlORibTNSl_Q9j1azJqeXoVBqCfJ2wQ/exec?page=host'},
+      {label:'現地アプリ（GitHub版）', url:'https://mkms0822-ops.github.io/nagaokakyou_hinanjyo/?page=host'}
+    ],
+    pw:'ログインパスワード（初期値）：nagaokakyo2026'
+  },
+  {
+    badge:'ツール②', color:'#8a5cc4',
+    title:'避難所運営 図上訓練ツール（SOT）— 概要・説明書',
+    desc:'災害時の避難所運営をチームで模擬体験する図上訓練ツール。ファシリテーターが状況イベントを配信し、参加者が対応を話し合う。避難所レイアウト作成、季節・時刻設定、総括レポートなどを搭載。',
+    pdf:'docs/03_図上訓練ツールSOT.pdf',
+    tools:[
+      {label:'SOTを開く', url:'https://mkms0822-ops.github.io/shelter.operation.geme/'}
+    ],
+    pw:'ログインパスワード：shelter2026'
+  },
+  {
+    badge:'ツール③', color:'#c9832f',
+    title:'DWA防災情報センター 長岡京市版 WEBサイト — 概要・取扱説明書',
+    desc:'平常時の備えから災害時の初動・避難・復旧までをスマホ一台で支える地域向け防災ポータル。防災マップ（災害別の避難可否判定）、SOSビーコン、緊急対応マニュアル、セルフ診断などを搭載。',
+    pdf:'docs/04_DWA防災情報センター.pdf',
+    tools:[
+      {label:'WEBサイトを開く', url:'https://mkms0822-ops.github.io/nagaokakyoushi_bousai_site/'}
+    ]
+  },
+  {
+    badge:'フライヤー', color:'#c23b3b',
+    title:'DWA防災情報センター フライヤー',
+    desc:'活動紹介・専門性・アクセス用QRをまとめた1枚もの。周知・広報にご活用いただけます。',
+    pdf:'docs/05_フライヤー.pdf'
+  }
+];
+
+// ===== 打ち合わせデータ（初期＝9/16、以降は端末に保存） =====
+var DEFAULT_MEETINGS = [
+  { id:'m-20260916', date:'2026-09-16', title:'第1回 協議', note:'各ツールのご提案／連携の目的・役割分担・費用負担・著作権などの確認', open:true }
+];
+var STORE_KEY = 'kyogi_meetings';
+
+function loadMeetings(){
+  try{
+    var saved = JSON.parse(localStorage.getItem(STORE_KEY)||'null');
+    if(saved && saved.length) return saved;
+  }catch(e){}
+  return DEFAULT_MEETINGS.slice();
+}
+function saveMeetings(list){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }catch(e){}
+}
+var MEETINGS = loadMeetings();
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
+function fmtDate(d){
+  var p=d.split('-'); if(p.length!==3) return {md:d,my:''};
+  return { md: parseInt(p[1],10)+'/'+parseInt(p[2],10), my: p[0]+'年' };
+}
+
+function render(){
+  var box=document.getElementById('meetingList');
+  // 新しい順に並べる
+  var list = MEETINGS.slice().sort(function(a,b){ return a.date<b.date?1:-1; });
+  box.innerHTML = list.map(function(m){
+    var d=fmtDate(m.date);
+    var docs = STANDARD_DOCS.map(function(doc){ return docHtml(doc); }).join('');
+    return '<div class="meeting'+(m.open?' open':'')+'" id="'+esc(m.id)+'">'+
+      '<div class="m-head" onclick="toggleMeeting(\''+esc(m.id)+'\')">'+
+        '<div class="m-date"><span class="md">'+esc(d.md)+'</span><span class="my">'+esc(d.my)+'</span></div>'+
+        '<div class="m-info"><div class="m-title">'+esc(m.title)+'</div>'+
+          (m.note?'<div class="m-note">'+esc(m.note)+'</div>':'')+'</div>'+
+        '<button class="m-toggle" onclick="event.stopPropagation();toggleMeeting(\''+esc(m.id)+'\')">'+(m.open?'▲ 閉じる':'📂 資料を展開')+'</button>'+
+      '</div>'+
+      '<div class="m-body">'+docs+
+        '<div style="text-align:right;margin-top:14px">'+
+          '<button class="btn btn-link" onclick="removeMeeting(\''+esc(m.id)+'\')">この打ち合わせを削除</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function docHtml(doc){
+  var btns = '<button class="btn btn-pdf" onclick="openViewer(\''+esc(doc.pdf)+'\',\''+esc(doc.title)+'\')">📄 PDFを表示</button>';
+  if(doc.tools){
+    doc.tools.forEach(function(t){
+      btns += '<a class="btn btn-tool" href="'+esc(t.url)+'" target="_blank" rel="noopener">🔧 '+esc(t.label)+'</a>';
+    });
+  }
+  btns += '<a class="btn btn-link" href="'+esc(doc.pdf)+'" download>⬇️ ダウンロード</a>';
+  return '<div class="doc">'+
+    '<div class="doc-h"><span class="doc-badge" style="background:'+esc(doc.color)+'">'+esc(doc.badge)+'</span>'+
+      '<span class="doc-title">'+esc(doc.title)+'</span></div>'+
+    '<div class="doc-desc">'+esc(doc.desc)+'</div>'+
+    '<div class="doc-btns">'+btns+'</div>'+
+    (doc.pw?'<div class="doc-meta">🔑 '+esc(doc.pw)+'</div>':'')+
+    '</div>';
+}
+
+function toggleMeeting(id){
+  MEETINGS.forEach(function(m){ if(m.id===id) m.open=!m.open; });
+  saveMeetings(MEETINGS); render();
+}
+function addMeeting(){
+  var date=document.getElementById('addDate').value;
+  var title=document.getElementById('addTitle').value.trim();
+  var note=document.getElementById('addNote').value.trim();
+  if(!date){ alert('日付を入力してください'); return; }
+  if(!title){ title='打ち合わせ'; }
+  MEETINGS.push({ id:'m-'+date.replace(/-/g,'')+'-'+Date.now().toString(16).slice(-4), date:date, title:title, note:note, open:true });
+  saveMeetings(MEETINGS);
+  document.getElementById('addTitle').value=''; document.getElementById('addNote').value='';
+  render();
+}
+function removeMeeting(id){
+  if(!confirm('この打ち合わせを削除しますか？')) return;
+  MEETINGS = MEETINGS.filter(function(m){ return m.id!==id; });
+  saveMeetings(MEETINGS); render();
+}
+
+// ===== PDFビューア =====
+function openViewer(url, title){
+  document.getElementById('vTitle').textContent = title || '資料';
+  document.getElementById('vFrame').src = url;
+  document.getElementById('vOpen').href = url;
+  document.getElementById('vDownload').href = url;
+  document.getElementById('viewer').classList.add('show');
+}
+function closeViewer(){
+  document.getElementById('viewer').classList.remove('show');
+  document.getElementById('vFrame').src = '';
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeViewer(); });
+
+// ===== テーマ =====
+function applyTheme(t){
+  var b=document.getElementById('themeBtn');
+  if(t==='light'){ document.documentElement.setAttribute('data-theme','light'); if(b)b.textContent='☀️ ライト'; }
+  else{ document.documentElement.removeAttribute('data-theme'); if(b)b.textContent='🌙 ダーク'; }
+}
+function toggleTheme(){
+  var now=document.documentElement.getAttribute('data-theme')==='light'?'light':'dark';
+  var next=now==='light'?'dark':'light';
+  applyTheme(next); try{ localStorage.setItem('kyogi_theme',next); }catch(e){}
+}
+(function(){ var s='dark'; try{ s=localStorage.getItem('kyogi_theme')||'dark'; }catch(e){} applyTheme(s); })();
+
+// 起動時、追加フォームの日付に今日を入れておく
+(function(){ var t=new Date(); document.getElementById('addDate').value = t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2); })();
+
+render();
+</script>
+</body>
+</html>
