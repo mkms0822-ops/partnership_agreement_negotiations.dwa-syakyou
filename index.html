@@ -126,18 +126,75 @@
     .m-toggle{width:100%;margin-top:8px}
     .doc-btns .btn{flex:1;justify-content:center}
   }
+  /* ===== ログイン画面 ===== */
+  #loginGate{position:fixed;inset:0;z-index:500;background:var(--navy-900);display:flex;
+    align-items:center;justify-content:center;padding:20px;overflow:auto}
+  #loginGate.hide{display:none}
+  .lg-inner{width:100%;max-width:760px;text-align:center}
+  .lg-img{width:100%;height:auto;display:block;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.5);margin-bottom:20px}
+  .lg-form{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .lg-form input{min-height:50px;background:var(--field);color:var(--ink);border:1px solid var(--field-line);
+    border-radius:10px;padding:10px 16px;font-size:16px;width:min(320px,80vw)}
+  .lg-form button{min-height:50px;padding:0 30px;border:none;border-radius:10px;background:var(--accent);
+    color:var(--accent-ink);font-weight:800;font-size:16px;cursor:pointer}
+  .lg-err{color:#ff9a9a;font-size:14px;font-weight:700;min-height:20px;margin-top:12px}
+
+  /* ===== 設定モーダル ===== */
+  .set-back{position:fixed;inset:0;z-index:400;background:rgba(5,15,28,.6);display:flex;
+    align-items:flex-start;justify-content:center;padding:20px;overflow:auto}
+  .set-back[hidden]{display:none !important}
+  .set-box{background:var(--navy-800);border:1px solid var(--line);border-radius:12px;max-width:400px;width:100%;margin:30px 0}
+  .set-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);font-size:16px}
+  .set-x{background:none;border:none;color:var(--ink-dim);font-size:22px;cursor:pointer;min-width:44px;min-height:44px}
+  .set-body{padding:16px 18px}
+  .set-body h4{font-size:14px;font-weight:800;margin-bottom:10px;color:var(--ink)}
+  .set-body input{width:100%;min-height:46px;background:var(--field);color:var(--ink);border:1px solid var(--field-line);
+    border-radius:8px;padding:8px 12px;font-size:15px;margin-bottom:8px}
+  .set-save{width:100%;min-height:46px;border:none;border-radius:8px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:15px;cursor:pointer}
+  .set-logout{width:100%;min-height:46px;border:1px solid var(--line);border-radius:8px;background:var(--navy-700);color:var(--ink);font-weight:700;font-size:15px;cursor:pointer}
+  .set-msg{font-size:13px;min-height:18px;margin-top:8px}
 </style>
 </head>
 <body>
+
+<!-- ===== ログイン画面（TOP） ===== -->
+<div id="loginGate">
+  <div class="lg-inner">
+    <img class="lg-img" src="top.png" alt="災害時パートナーシップ協定 協議資料ハブ">
+    <div class="lg-form">
+      <input id="loginPw" type="password" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')doLogin()">
+      <button onclick="doLogin()">ログイン</button>
+    </div>
+    <div id="loginErr" class="lg-err"></div>
+  </div>
+</div>
 
 <header>
   <div class="head-in">
     <div class="logo">協</div>
     <div class="htitle">協議資料ハブ<small>長岡京市社会福祉協議会 × DWA防災情報センター</small></div>
     <span class="head-sp"></span>
+    <button class="theme-btn" onclick="openSettings()" id="setBtn">⚙️ 設定</button>
     <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 ダーク</button>
   </div>
 </header>
+
+<!-- ===== 設定モーダル ===== -->
+<div id="setModal" class="set-back" hidden>
+  <div class="set-box">
+    <div class="set-head"><b>⚙️ 設定</b><button class="set-x" onclick="closeSettings()">✕</button></div>
+    <div class="set-body">
+      <h4>パスワードの変更</h4>
+      <input id="curPw" type="password" placeholder="現在のパスワード">
+      <input id="newPw1" type="password" placeholder="新しいパスワード（4文字以上）">
+      <input id="newPw2" type="password" placeholder="新しいパスワード（確認）">
+      <button class="set-save" onclick="changePw()">パスワードを変更</button>
+      <div id="pwMsg" class="set-msg"></div>
+      <h4 style="margin-top:18px">この端末</h4>
+      <button class="set-logout" onclick="logout()">ログアウト</button>
+    </div>
+  </div>
+</div>
 
 <div class="wrap">
 
@@ -453,6 +510,51 @@ function toggleTheme(){
 
 // 起動時、追加フォームの日付に今日を入れておく
 (function(){ var t=new Date(); document.getElementById('addDate').value = t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2); })();
+
+// ===== ログイン =====
+var LOGIN_KEY='kyogi_login', LOGIN_TTL=12*3600*1000;
+function isLoggedIn(){ try{ var a=JSON.parse(localStorage.getItem(LOGIN_KEY)||'null'); return a&&a.ok&&(Date.now()-a.at<LOGIN_TTL); }catch(e){ return false; } }
+function doLogin(){
+  var pw=document.getElementById('loginPw').value;
+  var err=document.getElementById('loginErr'); err.textContent='';
+  if(!pw){ err.textContent='パスワードを入力してください'; return; }
+  if(!MEMO_GAS_URL){ err.textContent='保存先が未設定です'; return; }
+  err.textContent='確認中…';
+  fetch(MEMO_GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'login',password:pw})})
+    .then(function(r){return r.json();}).then(function(res){
+      if(res&&res.ok){ try{localStorage.setItem(LOGIN_KEY,JSON.stringify({ok:true,at:Date.now()}));}catch(e){}
+        document.getElementById('loginGate').classList.add('hide'); document.getElementById('loginPw').value=''; }
+      else{ err.textContent='パスワードが違います'; }
+    }).catch(function(){ err.textContent='通信エラー'; });
+}
+function logout(){ try{localStorage.removeItem(LOGIN_KEY);}catch(e){} location.reload(); }
+
+// ===== 設定モーダル =====
+function openSettings(){ document.getElementById('setModal').hidden=false; }
+function closeSettings(){ document.getElementById('setModal').hidden=true; }
+function changePw(){
+  var cur=document.getElementById('curPw').value;
+  var n1=document.getElementById('newPw1').value;
+  var n2=document.getElementById('newPw2').value;
+  var msg=document.getElementById('pwMsg'); msg.style.color=''; msg.textContent='';
+  if(n1.length<4){ msg.style.color='#ff9a9a'; msg.textContent='新しいパスワードは4文字以上で'; return; }
+  if(n1!==n2){ msg.style.color='#ff9a9a'; msg.textContent='確認用と一致しません'; return; }
+  msg.textContent='変更中…';
+  fetch(MEMO_GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'change_password',current:cur,new_password:n1})})
+    .then(function(r){return r.json();}).then(function(res){
+      if(res&&res.ok){ msg.style.color='#7ff0ac'; msg.textContent='パスワードを変更しました。次回ログインから有効です。';
+        document.getElementById('curPw').value='';document.getElementById('newPw1').value='';document.getElementById('newPw2').value=''; }
+      else{ msg.style.color='#ff9a9a'; msg.textContent='変更失敗：'+((res&&res.error)||'不明'); }
+    }).catch(function(){ msg.style.color='#ff9a9a'; msg.textContent='通信エラー'; });
+}
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeSettings(); });
+document.getElementById('setModal').addEventListener('click',function(e){ if(e.target===this) closeSettings(); });
+
+// 起動：ログイン状態でゲート表示を切替
+if(isLoggedIn()){ document.getElementById('loginGate').classList.add('hide'); }
+else{ document.getElementById('loginGate').classList.remove('hide'); setTimeout(function(){var e=document.getElementById('loginPw');if(e)e.focus();},100); }
 
 render();
 </script>
